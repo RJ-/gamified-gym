@@ -17,8 +17,13 @@ end;
 $$;
 
 insert into auth.users values ('11111111-1111-1111-1111-111111111111');
-insert into public.members (id, gym_id)
-values ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001');
+select pg_temp.expect_error($$
+  insert into public.members (id, gym_id)
+  values ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001')
+$$, 'member without a recorded privacy consent');
+insert into public.members (id, gym_id, privacy_consent_at, privacy_notice_version)
+values ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001',
+        now(), 'test');
 
 -- New members start pending, target 3, hidden from the TV.
 do $$

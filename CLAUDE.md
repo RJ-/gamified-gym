@@ -29,6 +29,9 @@ Plan" (Claude Doc, https://claude.ai/artifact/1pCttFVxRMpEBVUALeswfL).
 | `/`      | members        | Sign in, Scan to check in, "2 of 3 this week", streak, XP, level, nickname, TV opt-in |
 | `/tv`    | display account| Rotating 30 s QR, welcome banner (opt-in), today's count, monthly goal bar, top streaks |
 | `/admin` | staff / admin  | Approve sign-ups, deactivate, manual check-in, void check-in, monthly goal, closure weeks |
+| `/login` | anyone         | Email link or code, or Google |
+| `/profile` | members      | Nickname, TV opt-in, sign out, delete account |
+| `/privacy` | anyone       | Privacy notice (RA 10173) |
 | `/api/health` | anyone    | Setup check: Supabase keys set and schema applied. Reveals no data |
 
 ## Gym constraints (from the owner)
@@ -64,12 +67,33 @@ plan doc in the same PR.
 
 - Schema lives in `supabase/migrations/*.sql` (timestamped, append-only: add a
   new migration, never edit one that has been applied).
-- Every table has RLS enabled. Week 1 has no policies (service role only);
-  policies are added deliberately, with a test.
+- Every table has RLS enabled. Policies are SELECT-only: own rows, plus the
+  whole gym for active staff/admin. The browser never writes tables directly:
+  every write is a `security definer` function with `set search_path = ''`
+  that checks the caller (`join_gym`, `update_my_profile`,
+  `set_member_status`, `set_member_role`, `delete_my_account`). anon gets no
+  table or function access. New policies or functions need a test in
+  `supabase/tests/rls_policies.sql`.
+- No service role key in the app. Server code uses the user's session
+  (`src/lib/supabase/server.ts`), so RLS always applies.
+- Roles: `member`, `staff` (approve/deactivate members), `admin` (also
+  staff/member roles; set in the SQL editor), `display` (TV, week 3).
 - `xp_ledger` is append-only (trigger). Corrections are `adjustment` rows with
   a reason. `(member_id, kind, ref)` is unique for automatic grants.
-- `supabase/tests/schema_rules.sql` checks constraints on plain Postgres in CI.
-  Add a check there for every new database rule.
+- `supabase/tests/schema_rules.sql` checks constraints and
+  `supabase/tests/rls_policies.sql` checks access, on plain Postgres in CI
+  (`supabase/tests/auth_stub.sql` fakes Supabase's roles and `auth.uid()`).
+  Add a check for every new database rule.
+
+## Auth
+
+- Email magic link / code and Google, via `@supabase/ssr` with httpOnly
+  cookies. `src/proxy.ts` refreshes the session; `getViewer()` in
+  `src/lib/auth.ts` says who is looking. Both links land on `/auth/callback`
+  (`code` or `token_hash`); `next` goes through `safeNextPath`.
+- Every Server Action re-checks the session; the database checks again.
+- Sign-up = sign in + Join form (full name, optional nickname, TV opt-in,
+  privacy consent with `PRIVACY_NOTICE_VERSION`). New members are `pending`.
 
 ## Workflow rules
 
