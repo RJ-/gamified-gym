@@ -36,8 +36,8 @@ jobs:
       PGPASSWORD: postgres
     steps:
       - uses: actions/checkout@v4
-      - name: Apply migrations and check schema rules
+      - name: Apply migrations, check schema rules and RLS
         run: |
-          files="supabase/tests/auth_stub.sql $(ls supabase/migrations/*.sql | sort) supabase/seed.sql supabase/tests/schema_rules.sql"
+          files="supabase/tests/auth_stub.sql $(ls supabase/migrations/*.sql | sort) supabase/seed.sql supabase/tests/schema_rules.sql supabase/tests/rls_policies.sql"
           args=""; for f in $files; do args="$args -f $f"; done
           psql -v ON_ERROR_STOP=1 -q $args
