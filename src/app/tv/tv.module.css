@@ -1,0 +1,88 @@
+/* Sized in viewport units so it reads from across the gym on any TV. */
+.tv {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 3vw;
+  padding: 4vh 4vw;
+  align-items: center;
+}
+
+.qrPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3vh;
+}
+
+.qrBox {
+  /* At least a third of the screen height, per the plan's design note. */
+  width: min(60vh, 40vw);
+  aspect-ratio: 1;
+  border-radius: 2vh;
+  background: #fff;
+  color: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 4vh;
+  font-weight: 700;
+}
+
+.qrBox small {
+  font-size: 2.2vh;
+  font-weight: 400;
+  color: #666;
+}
+
+.scanHint {
+  font-size: 3.2vh;
+  margin: 0;
+  text-align: center;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5vh;
+}
+
+.clock {
+  font-size: 4vh;
+  margin: 0;
+  color: var(--muted);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 2vh;
+  padding: 2.5vh 2vw;
+}
+
+.panel p {
+  margin: 0;
+}
+
+.label {
+  font-size: 2.4vh;
+  color: var(--muted);
+  margin-bottom: 1vh !important;
+}
+
+.big {
+  font-size: 9vh;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (orientation: portrait) {
+  .tv {
+    grid-template-columns: 1fr;
+  }
+
+  .qrBox {
+    width: min(70vw, 45vh);
+  }
+}
